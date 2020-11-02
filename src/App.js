@@ -39,7 +39,8 @@ const useStyles = makeStyles((theme) => ({
     flexGrow: 1,
   },
   container: {
-    padding: '50px',
+    padding: 50,
+    minHeight: '100vh',
     backgroundColor: '#ccc',
   },
   createContiner: {
@@ -58,6 +59,14 @@ function App() {
 
   useEffect(() => {
     getBooks((data) => {
+      // add missing keys to the list
+      data.map((item) => {
+        item.rating = 1;
+        item.review = '';
+
+        return item;
+      });
+
       setBookList(data);
     });
   }, []);
@@ -82,10 +91,45 @@ function App() {
           title: inputValue,
           description: '',
           books: [],
-          rating: 0,
+          rating: 1,
+          review: '',
         },
       ]);
     }
+  }
+
+  function handleBookReviewChange(review, index) {
+    let newArr = [...bookList];
+    newArr[index].review = review;
+    setBookList(newArr);
+  }
+
+  function handleBookRatingChange(rating, index) {
+    let newArr = [...bookList];
+    newArr[index].rating = rating;
+    setBookList(newArr);
+  }
+
+  function handleShelveReviewChange(review, index) {
+    let newArr = [...shelves];
+    newArr[index].review = review;
+    setShelves(newArr);
+  }
+
+  function handleShelveRatingChange(rating, index) {
+    let newArr = [...shelves];
+    newArr[index].rating = rating;
+    setShelves(newArr);
+  }
+
+  function addBookToShelve(shelve, book) {
+    let obj = shelves.find((x) => x.title === shelve);
+    let index = shelves.indexOf(obj);
+
+    let newArr = [...shelves];
+    newArr[index].books.push(book);
+
+    setShelves(newArr);
   }
 
   return (
@@ -106,13 +150,25 @@ function App() {
 
       {activeView ? (
         <div className={classes.container}>
-          <ListView list={bookList} theme={theme} type="books" />
+          <ListView
+            list={bookList}
+            shelves={shelves}
+            theme={theme}
+            type="books"
+            onChangeReview={handleBookReviewChange}
+            onChangeRating={handleBookRatingChange}
+            onChangeShelve={addBookToShelve}
+          />
         </div>
       ) : (
-        <div className={classes.createContiner}>
-          <h3>Create new shelve:</h3>
-          <Input type="text" onChange={handleInputChange} />
-          <CustomButton name="CREATE" btnClick={handleCreate} />
+        <div className={classes.container}>
+          <div className={classes.createContiner}>
+            <h3>Create new shelve:</h3>
+            <Input type="text" onChange={handleInputChange} />
+            <CustomButton name="CREATE" btnClick={handleCreate} />
+          </div>
+
+          <ListView list={shelves} theme={theme} type="shelves" onChangeReview={handleShelveReviewChange} onChangeRating={handleShelveRatingChange} />
         </div>
       )}
     </ThemeProvider>
